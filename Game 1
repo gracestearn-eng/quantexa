@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quantexa: Uncover the Network</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #080620;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-x: hidden;
+  }
+
+  .game-shell {
+    width: 100%;
+    max-width: 900px;
+    padding: 24px;
+  }
+
+  /* ── Header ── */
+  .game-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .game-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .brand-q {
+    width: 28px; height: 28px;
+  }
+
+  .brand-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: rgba(0,212,180,0.7);
+  }
+
+  .game-score-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .score-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+  }
+
+  .score-val {
+    font-size: 20px;
+    font-weight: 800;
+    color: #00D4B4;
+    line-height: 1;
+  }
+
+  .score-lbl {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+  }
+
+  /* ── Intro screen ── */
+  .screen {
+    display: none;
+  }
+  .screen.active {
+    display: block;
+  }
+
+  .intro-card {
+    background: linear-gradient(148deg, #0D0826 0%, #1E1152 100%);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .intro-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, transparent, #00D4B4, transparent);
+  }
+
+  .intro-eyebrow {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(0,212,180,0.7);
+    margin-bottom: 16px;
+  }
+
+  .intro-title {
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 800;
+    line-height: 1.05;
+    margin-bottom: 16px;
+  }
+
+  .intro-title span { color: #00D4B4; }
+
+  .intro-desc {
+    font-size: 15px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.7;
+    max-width: 520px;
+    margin: 0 auto 32px;
+  }
+
+  .intro-context {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+  }
+
+  .context-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(0,212,180,0.08);
+    border: 1px solid rgba(0,212,180,0.15);
+    border-radius: 8px;
+  }
+
+  .context-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #00D4B4;
+    flex-shrink: 0;
+  }
+
+  .context-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 0.04em;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 16px 40px;
+    background: #00D4B4;
+    color: #080620;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+  }
+
+  .btn-primary:hover {
+    background: #1FFAD8;
+    transform: translateY(-2px);
+  }
+
+  /* ── Game screen ── */
+  .game-card {
+    background: linear-gradient(148deg, #0D0826 0%, #1E1152 100%);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .game-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, transparent, #00D4B4, transparent);
+  }
+
+  .game-top {
+    padding: 24px 32px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .round-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(0,212,180,0.6);
+    margin-bottom: 6px;
+  }
+
+  .round-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+
+  .round-instruction {
+    font-size: 12px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.5;
+  }
+
+  .round-instruction strong {
+    color: #00D4B4;
+    font-weight: 600;
+  }
+
+  /* ── Canvas area ── */
+  .canvas-area {
+    position: relative;
+    height: 420px;
+    overflow: hidden;
+  }
+
+  #gameCanvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+
+  /* ── Node elements ── */
+  .node {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transform: translate(-50%, -50%);
+    transition: transform 0.15s;
+    z-index: 10;
+    user-select: none;
+  }
+
+  .node:hover { transform: translate(-50%, -50%) scale(1.08); }
+
+  .node-circle {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    border: 2px solid rgba(255,255,255,0.12);
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(4px);
+  }
+
+  .node.selected .node-circle {
+    border-color: #00D4B4;
+    box-shadow: 0 0 0 4px rgba(0,212,180,0.2), 0 0 20px rgba(0,212,180,0.3);
+    background: rgba(0,212,180,0.1);
+  }
+
+  .node.correct .node-circle {
+    border-color: #00D4B4;
+    background: rgba(0,212,180,0.2);
+    box-shadow: 0 0 0 4px rgba(0,212,180,0.3), 0 0 30px rgba(0,212,180,0.4);
+  }
+
+  .node.wrong .node-circle {
+    border-color: #FF4D6D;
+    background: rgba(255,77,109,0.15);
+    box-shadow: 0 0 0 4px rgba(255,77,109,0.2);
+  }
+
+  .node.innocent .node-circle {
+    border-color: rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.03);
+    opacity: 0.5;
+  }
+
+  .node-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+    text-align: center;
+    max-width: 80px;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+  }
+
+  .node.correct .node-label { color: #00D4B4; }
+  .node.wrong   .node-label { color: #FF4D6D; }
+
+  /* ── Feedback bar ── */
+  .feedback-bar {
+    padding: 14px 32px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 56px;
+  }
+
+  .feedback-text {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .feedback-text.success { color: #00D4B4; }
+  .feedback-text.error   { color: #FF4D6D; }
+
+  .btn-next {
+    display: inline-block;
+    padding: 10px 24px;
+    background: #00D4B4;
+    color: #080620;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.15s;
+  }
+
+  .btn-next.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .btn-next:hover { transform: translateY(-1px); }
+
+  /* ── Progress dots ── */
+  .progress-dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    transition: background 0.3s, transform 0.3s;
+  }
+
+  .dot.done    { background: #00D4B4; }
+  .dot.current { background: rgba(0,212,180,0.5); transform: scale(1.4); }
+
+  /* ── End screen ── */
+  .end-card {
+    background: linear-gradient(148deg, #0D0826 0%, #1E1152 100%);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .end-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, transparent, #00D4B4, transparent);
+  }
+
+  .end-score-big {
+    font-size: 72px;
+    font-weight: 800;
+    color: #00D4B4;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .end-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 24px;
+  }
+
+  .end-title {
+    font-size: clamp(22px, 3vw, 32px);
+    font-weight: 800;
+    margin-bottom: 12px;
+  }
+  .end-title span { color: #00D4B4; }
+
+  .end-desc {
+    font-size: 14px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.7;
+    max-width: 480px;
+    margin: 0 auto 32px;
+  }
+
+  .end-insight {
+    background: rgba(0,212,180,0.06);
+    border: 1px solid rgba(0,212,180,0.15);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 0 auto 32px;
+    max-width: 540px;
+    text-align: left;
+  }
+
+  .end-insight-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(0,212,180,0.6);
+    margin-bottom: 8px;
+  }
+
+  .end-insight-text {
+    font-size: 13px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.65);
+    line-height: 1.65;
+  }
+
+  /* ── Dot grid bg ── */
+  .dotgrid {
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none;
+  }
+
+  /* ── Connection pulse animation ── */
+  @keyframes pulse-line {
+    0%   { stroke-dashoffset: 200; opacity: 0; }
+    20%  { opacity: 1; }
+    100% { stroke-dashoffset: 0; opacity: 0.8; }
+  }
+
+  .connection-line {
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+    animation: pulse-line 0.6s ease-out forwards;
+  }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+
+  <!-- Header -->
+  <div class="game-header">
+    <div class="game-brand">
+      <svg class="brand-q" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="26" height="26" rx="5" fill="rgba(0,212,180,0.12)"/>
+        <path d="M13 5C8.58 5 5 8.58 5 13C5 17.42 8.58 21 13 21C14.97 21 16.77 20.32 18.2 19.18L20.12 21.1L21.5 19.72L19.6 17.82C20.49 16.5 21 14.82 21 13C21 8.58 17.42 5 13 5ZM13 18.8C9.9 18.8 7.2 16.22 7.2 13C7.2 9.78 9.9 7.2 13 7.2C16.1 7.2 18.8 9.78 18.8 13C18.8 14.2 18.4 15.3 17.74 16.2L15.84 14.3C16.28 13.62 16.52 12.84 16.52 12C16.52 10.06 15.12 8.84 13 8.84C10.88 8.84 9.48 10.06 9.48 12C9.48 13.94 10.88 15.16 13 15.16C13.88 15.16 14.66 14.86 15.26 14.36L17.12 16.22C16.02 17.12 14.58 18 13 18.8Z" fill="#00D4B4"/>
+      </svg>
+      <span class="brand-label">Quantexa</span>
+    </div>
+    <div class="game-score-bar">
+      <div class="score-chip">
+        <span class="score-val" id="scoreDisplay">0</span>
+        <span class="score-lbl">Score</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTRO SCREEN -->
+  <div class="screen active" id="introScreen">
+    <div class="intro-card">
+      <div class="dotgrid"></div>
+      <div style="position:relative;">
+        <p class="intro-eyebrow">Quantexa — Decision Intelligence</p>
+        <h1 class="intro-title">Uncover the<br><span>Hidden Network</span></h1>
+        <p class="intro-desc">
+          The Quantexa platform works by connecting fragmented data points to reveal hidden relationships that humans would never spot alone. Now it's your turn to think like the platform.
+        </p>
+        <div class="intro-context">
+          <div class="context-item">
+            <div class="context-dot"></div>
+            <span class="context-text">3 Rounds</span>
+          </div>
+          <div class="context-item">
+            <div class="context-dot"></div>
+            <span class="context-text">Spot the connections</span>
+          </div>
+          <div class="context-item">
+            <div class="context-dot"></div>
+            <span class="context-text">Think like Quantexa</span>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="startGame()">Start Investigation</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div class="screen" id="gameScreen">
+    <div class="game-card">
+      <div class="dotgrid"></div>
+
+      <div class="game-top">
+        <p class="round-label" id="roundLabel">Round 1 of 3</p>
+        <p class="round-title" id="roundTitle"></p>
+        <p class="round-instruction" id="roundInstruction"></p>
+      </div>
+
+      <div class="canvas-area" id="canvasArea">
+        <canvas id="gameCanvas"></canvas>
+        <!-- Nodes injected by JS -->
+      </div>
+
+      <div class="progress-dots" id="progressDots"></div>
+
+      <div class="feedback-bar">
+        <span class="feedback-text" id="feedbackText">Select the nodes that are connected to the suspicious activity.</span>
+        <button class="btn-next" id="btnNext" onclick="nextRound()">Next Round →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- END SCREEN -->
+  <div class="screen" id="endScreen">
+    <div class="end-card">
+      <div class="dotgrid"></div>
+      <div style="position:relative;">
+        <div class="end-score-big" id="finalScore">0</div>
+        <p class="end-label">Points Scored</p>
+        <h2 class="end-title" id="endTitle">Network <span>Uncovered</span></h2>
+        <p class="end-desc" id="endDesc"></p>
+        <div class="end-insight">
+          <p class="end-insight-label">The Quantexa Difference</p>
+          <p class="end-insight-text">What you just did manually across 3 scenarios, Quantexa does automatically — across millions of data points, in real time, without anyone having to look. That's decision intelligence.</p>
+        </div>
+        <button class="btn-primary" onclick="restartGame()">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── Game data ──────────────────────────────────────────────
+  const rounds = [
+    {
+      title: "Follow the Money",
+      instruction: "A bank has flagged an unusual transaction. <strong>Select all entities connected to the suspicious payment flow.</strong>",
+      nodes: [
+        { id: 0, label: "Meridian\nBank",       icon: "🏦", x: 0.18, y: 0.35, suspect: true  },
+        { id: 1, label: "Shell Co.\nAlpha Ltd",  icon: "🏢", x: 0.38, y: 0.20, suspect: true  },
+        { id: 2, label: "James\nHolloway",       icon: "👤", x: 0.60, y: 0.25, suspect: true  },
+        { id: 3, label: "Offshore\nAccount",     icon: "💳", x: 0.78, y: 0.45, suspect: true  },
+        { id: 4, label: "Sarah\nPatel",          icon: "👤", x: 0.25, y: 0.72, suspect: false },
+        { id: 5, label: "Greenway\nRetail",      icon: "🏪", x: 0.55, y: 0.70, suspect: false },
+        { id: 6, label: "HMRC\nRecord",          icon: "📋", x: 0.82, y: 0.72, suspect: false },
+      ],
+      connections: [[0,1],[1,2],[2,3]],
+      insight: "Shell companies are a classic layering technique in money laundering. Quantexa maps these corporate ownership chains instantly across millions of registry records."
+    },
+    {
+      title: "Identity Fraud Ring",
+      instruction: "Multiple loan applications share overlapping details. <strong>Identify the linked applications that form a fraud ring.</strong>",
+      nodes: [
+        { id: 0, label: "App #4821\nJ. Morris",    icon: "📄", x: 0.20, y: 0.28, suspect: true  },
+        { id: 1, label: "App #4822\nK. Morris",    icon: "📄", x: 0.45, y: 0.18, suspect: true  },
+        { id: 2, label: "Shared\nAddress",         icon: "📍", x: 0.68, y: 0.32, suspect: true  },
+        { id: 3, label: "App #4830\nL. Morris",    icon: "📄", x: 0.55, y: 0.58, suspect: true  },
+        { id: 4, label: "App #5100\nA. Singh",     icon: "📄", x: 0.18, y: 0.68, suspect: false },
+        { id: 5, label: "Credit\nBureau",          icon: "🏛️", x: 0.80, y: 0.65, suspect: false },
+        { id: 6, label: "App #5200\nB. Chen",      icon: "📄", x: 0.40, y: 0.78, suspect: false },
+      ],
+      connections: [[0,1],[1,2],[2,3],[0,3]],
+      insight: "Fraud rings often share small details — an address, a phone number, a device ID. Quantexa's entity resolution surfaces these overlaps across siloed systems automatically."
+    },
+    {
+      title: "Sanctions Risk",
+      instruction: "A customer passed KYC checks but hidden relationships may indicate sanctions exposure. <strong>Find the connected risk entities.</strong>",
+      nodes: [
+        { id: 0, label: "Vortex\nTrading Ltd",    icon: "🏢", x: 0.22, y: 0.30, suspect: true  },
+        { id: 1, label: "Director\nA. Volkov",    icon: "👤", x: 0.48, y: 0.20, suspect: true  },
+        { id: 2, label: "Sanctioned\nEntity",     icon: "⛔", x: 0.72, y: 0.30, suspect: true  },
+        { id: 3, label: "Legitimate\nSupplier",   icon: "✅", x: 0.20, y: 0.68, suspect: false },
+        { id: 4, label: "Pension\nFund",          icon: "🏛️", x: 0.50, y: 0.72, suspect: false },
+        { id: 5, label: "Holding Co.\nCyprus",    icon: "🏢", x: 0.78, y: 0.58, suspect: true  },
+        { id: 6, label: "End\nCustomer",          icon: "👥", x: 0.85, y: 0.25, suspect: false },
+      ],
+      connections: [[0,1],[1,2],[2,5]],
+      insight: "Sanctions evasion often runs through multiple layers of ownership across jurisdictions. Quantexa maps beneficial ownership networks to expose hidden exposure that rule-based systems miss."
+    }
+  ];
+
+  // ── State ──────────────────────────────────────────────────
+  let currentRound = 0;
+  let score = 0;
+  let selectedNodes = new Set();
+  let roundComplete = false;
+  let nodeEls = [];
+  let canvasLines = [];
+
+  // ── Start ──────────────────────────────────────────────────
+  function startGame() {
+    document.getElementById('introScreen').classList.remove('active');
+    document.getElementById('gameScreen').classList.add('active');
+    buildProgressDots();
+    loadRound(0);
+  }
+
+  function buildProgressDots() {
+    const container = document.getElementById('progressDots');
+    container.innerHTML = '';
+    rounds.forEach((_, i) => {
+      const d = document.createElement('div');
+      d.className = 'dot' + (i === 0 ? ' current' : '');
+      d.id = 'dot' + i;
+      container.appendChild(d);
+    });
+  }
+
+  function loadRound(idx) {
+    currentRound = idx;
+    selectedNodes.clear();
+    roundComplete = false;
+    canvasLines = [];
+
+    const round = rounds[idx];
+
+    document.getElementById('roundLabel').textContent = `Round ${idx+1} of ${rounds.length}`;
+    document.getElementById('roundTitle').textContent = round.title;
+    document.getElementById('roundInstruction').innerHTML = round.instruction;
+    document.getElementById('feedbackText').textContent = 'Select the nodes that are connected to the suspicious activity.';
+    document.getElementById('feedbackText').className = 'feedback-text';
+    document.getElementById('btnNext').className = 'btn-next';
+    document.getElementById('btnNext').textContent = idx < rounds.length - 1 ? 'Next Round →' : 'See Results →';
+
+    // Progress dots
+    rounds.forEach((_, i) => {
+      const d = document.getElementById('dot' + i);
+      if (i < idx) d.className = 'dot done';
+      else if (i === idx) d.className = 'dot current';
+      else d.className = 'dot';
+    });
+
+    renderNodes(round);
+    renderCanvas();
+  }
+
+  function renderNodes(round) {
+    const area = document.getElementById('canvasArea');
+    // Remove old nodes
+    nodeEls.forEach(el => el.remove());
+    nodeEls = [];
+
+    round.nodes.forEach(node => {
+      const el = document.createElement('div');
+      el.className = 'node';
+      el.id = 'node' + node.id;
+      el.style.left = (node.x * 100) + '%';
+      el.style.top  = (node.y * 100) + '%';
+      el.innerHTML = `
+        <div class="node-circle">${node.icon}</div>
+        <div class="node-label">${node.label.replace('\n','<br>')}</div>
+      `;
+      el.addEventListener('click', () => handleNodeClick(node.id));
+      area.appendChild(el);
+      nodeEls.push(el);
+    });
+  }
+
+  function renderCanvas() {
+    const canvas = document.getElementById('gameCanvas');
+    const area   = document.getElementById('canvasArea');
+    canvas.width  = area.offsetWidth;
+    canvas.height = area.offsetHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw confirmed connection lines
+    canvasLines.forEach(line => {
+      const a = rounds[currentRound].nodes[line[0]];
+      const b = rounds[currentRound].nodes[line[1]];
+      const x1 = a.x * canvas.width;
+      const y1 = a.y * canvas.height;
+      const x2 = b.x * canvas.width;
+      const y2 = b.y * canvas.height;
+
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.strokeStyle = 'rgba(0,212,180,0.5)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Midpoint glow dot
+      ctx.beginPath();
+      ctx.arc((x1+x2)/2, (y1+y2)/2, 3, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(0,212,180,0.6)';
+      ctx.fill();
+    });
+  }
+
+  function handleNodeClick(nodeId) {
+    if (roundComplete) return;
+
+    const round = rounds[currentRound];
+    const node  = round.nodes[nodeId];
+    const el    = document.getElementById('node' + nodeId);
+
+    if (selectedNodes.has(nodeId)) {
+      selectedNodes.delete(nodeId);
+      el.className = 'node';
+      renderCanvas();
+      return;
+    }
+
+    selectedNodes.add(nodeId);
+
+    if (node.suspect) {
+      el.className = 'node correct';
+      score += 10;
+      document.getElementById('scoreDisplay').textContent = score;
+
+      // Check if we should draw connections
+      round.connections.forEach(conn => {
+        if (selectedNodes.has(conn[0]) && selectedNodes.has(conn[1])) {
+          if (!canvasLines.find(l => l[0]===conn[0] && l[1]===conn[1])) {
+            canvasLines.push(conn);
+          }
+        }
+      });
+      renderCanvas();
+
+      // Check if all suspects found
+      const allFound = round.nodes.filter(n => n.suspect).every(n => selectedNodes.has(n.id));
+      if (allFound) {
+        roundComplete = true;
+        // Dim innocents
+        round.nodes.filter(n => !n.suspect).forEach(n => {
+          document.getElementById('node' + n.id).className = 'node innocent';
+        });
+        document.getElementById('feedbackText').textContent = '✓ Network uncovered — ' + round.insight.substring(0, 60) + '...';
+        document.getElementById('feedbackText').className = 'feedback-text success';
+        document.getElementById('btnNext').className = 'btn-next visible';
+      } else {
+        const remaining = round.nodes.filter(n => n.suspect && !selectedNodes.has(n.id)).length;
+        document.getElementById('feedbackText').textContent = `Good — ${remaining} more connection${remaining > 1 ? 's' : ''} to find.`;
+        document.getElementById('feedbackText').className = 'feedback-text success';
+      }
+
+    } else {
+      el.className = 'node wrong';
+      score = Math.max(0, score - 5);
+      document.getElementById('scoreDisplay').textContent = score;
+      document.getElementById('feedbackText').textContent = 'Not quite — this entity is not part of the network.';
+      document.getElementById('feedbackText').className = 'feedback-text error';
+      setTimeout(() => {
+        el.className = 'node';
+        selectedNodes.delete(nodeId);
+        document.getElementById('feedbackText').textContent = 'Keep looking — select the suspicious connected entities.';
+        document.getElementById('feedbackText').className = 'feedback-text';
+      }, 1200);
+    }
+  }
+
+  function nextRound() {
+    if (currentRound < rounds.length - 1) {
+      loadRound(currentRound + 1);
+    } else {
+      showEnd();
+    }
+  }
+
+  function showEnd() {
+    document.getElementById('gameScreen').classList.remove('active');
+    document.getElementById('endScreen').classList.add('active');
+
+    const maxScore = rounds.reduce((acc, r) => acc + r.nodes.filter(n => n.suspect).length * 10, 0);
+    const pct = Math.round((score / maxScore) * 100);
+
+    document.getElementById('finalScore').textContent = score;
+
+    let title, desc;
+    if (pct >= 90) {
+      title = 'Network <span>Fully Exposed</span>';
+      desc  = 'Outstanding — you spotted every suspicious connection across all three scenarios. You\'re thinking exactly like the Quantexa platform.';
+    } else if (pct >= 60) {
+      title = 'Strong <span>Investigator</span>';
+      desc  = 'You uncovered most of the network. With more data and context, Quantexa would have surfaced the rest automatically — no manual effort required.';
+    } else {
+      title = 'The Network <span>Fights Back</span>';
+      desc  = 'Complex fraud networks are deliberately hard to spot manually. This is exactly the problem Quantexa was built to solve — at scale, in real time.';
+    }
+
+    document.getElementById('endTitle').innerHTML = title;
+    document.getElementById('endDesc').textContent = desc;
+  }
+
+  function restartGame() {
+    score = 0;
+    document.getElementById('scoreDisplay').textContent = '0';
+    document.getElementById('endScreen').classList.remove('active');
+    document.getElementById('introScreen').classList.add('active');
+  }
+
+  // Resize canvas on window resize
+  window.addEventListener('resize', () => {
+    if (document.getElementById('gameScreen').classList.contains('active')) {
+      renderCanvas();
+    }
+  });
+</script>
+
+</body>
+</html>
